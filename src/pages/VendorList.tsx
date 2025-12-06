@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Plus, Search, Mail, Phone, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Mail,
+  Phone,
+  MoreVertical,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -21,12 +29,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { mockVendors } from "@/store/mockData";
 import { Vendor } from "@/types";
 import { toast } from "@/hooks/use-toast";
+import { useVendors } from "@/services/vendor.service";
 
 export default function VendorList() {
-  const [vendors, setVendors] = useState<Vendor[]>(mockVendors);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
@@ -37,11 +44,8 @@ export default function VendorList() {
     notes: "",
   });
 
-  const filteredVendors = vendors.filter(
-    (vendor) =>
-      vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vendor.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  //DATA
+  const { data } = useVendors(queryObj);
 
   const handleSubmit = () => {
     if (!formData.name || !formData.email) {
@@ -61,7 +65,10 @@ export default function VendorList() {
             : v
         )
       );
-      toast({ title: "Vendor Updated", description: `${formData.name} has been updated.` });
+      toast({
+        title: "Vendor Updated",
+        description: `${formData.name} has been updated.`,
+      });
     } else {
       const newVendor: Vendor = {
         _id: `v${Date.now()}`,
@@ -70,7 +77,10 @@ export default function VendorList() {
         updatedAt: new Date().toISOString(),
       };
       setVendors((prev) => [...prev, newVendor]);
-      toast({ title: "Vendor Added", description: `${formData.name} has been added.` });
+      toast({
+        title: "Vendor Added",
+        description: `${formData.name} has been added.`,
+      });
     }
 
     setIsDialogOpen(false);
@@ -91,7 +101,10 @@ export default function VendorList() {
 
   const handleDelete = (vendor: Vendor) => {
     setVendors((prev) => prev.filter((v) => v._id !== vendor._id));
-    toast({ title: "Vendor Deleted", description: `${vendor.name} has been removed.` });
+    toast({
+      title: "Vendor Deleted",
+      description: `${vendor.name} has been removed.`,
+    });
   };
 
   const openNewVendorDialog = () => {
@@ -115,7 +128,9 @@ export default function VendorList() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{editingVendor ? "Edit Vendor" : "Add New Vendor"}</DialogTitle>
+                <DialogTitle>
+                  {editingVendor ? "Edit Vendor" : "Add New Vendor"}
+                </DialogTitle>
                 <DialogDescription>
                   {editingVendor
                     ? "Update the vendor's information below."
@@ -128,7 +143,9 @@ export default function VendorList() {
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     placeholder="Acme Corporation"
                   />
                 </div>
@@ -138,7 +155,9 @@ export default function VendorList() {
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     placeholder="contact@acme.com"
                   />
                 </div>
@@ -147,7 +166,9 @@ export default function VendorList() {
                   <Input
                     id="phone"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
                     placeholder="+1 555-0100"
                   />
                 </div>
@@ -156,14 +177,19 @@ export default function VendorList() {
                   <Textarea
                     id="notes"
                     value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, notes: e.target.value })
+                    }
                     placeholder="Any additional notes about this vendor..."
                     rows={3}
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button onClick={handleSubmit}>
@@ -226,7 +252,11 @@ export default function VendorList() {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>

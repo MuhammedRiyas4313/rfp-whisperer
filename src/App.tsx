@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Dashboard from "@/pages/Dashboard";
 import RFPList from "@/pages/RFPList";
 import CreateRFP from "@/pages/CreateRFP";
@@ -35,6 +36,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    <ReactQueryDevtools initialIsOpen={false} />
   </QueryClientProvider>
 );
 
