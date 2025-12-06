@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Send, Users, DollarSign, Clock, Package, CheckCircle2, Mail } from "lucide-react";
+import {
+  ArrowLeft,
+  Send,
+  Users,
+  DollarSign,
+  Clock,
+  Package,
+  CheckCircle2,
+  Mail,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -32,11 +41,16 @@ export default function RFPDetail() {
 
   const statusBadgeVariant = (status: string) => {
     switch (status) {
-      case "draft": return "draft";
-      case "sent": return "sent";
-      case "receiving_responses": return "receiving";
-      case "completed": return "completed";
-      default: return "default";
+      case "draft":
+        return "draft";
+      case "sent":
+        return "sent";
+      case "receiving_responses":
+        return "receiving";
+      case "completed":
+        return "completed";
+      default:
+        return "default";
     }
   };
 
@@ -88,7 +102,9 @@ export default function RFPDetail() {
               {rfp.status.replace("_", " ")}
             </Badge>
           </div>
-          <p className="mt-2 text-muted-foreground max-w-2xl">{rfp.description}</p>
+          <p className="mt-2 text-muted-foreground max-w-2xl">
+            {rfp.description}
+          </p>
         </div>
         {rfp.status === "draft" && (
           <Button variant="accent" onClick={handleSendRFP}>
@@ -98,9 +114,7 @@ export default function RFPDetail() {
         )}
         {rfp.status !== "draft" && rfpProposals.length > 0 && (
           <Button asChild variant="accent">
-            <Link to={`/compare?rfp=${rfp._id}`}>
-              Compare Proposals
-            </Link>
+            <Link to={`/compare?rfp=${rfp._id}`}>Compare Proposals</Link>
           </Button>
         )}
       </div>
@@ -111,7 +125,7 @@ export default function RFPDetail() {
           {/* Details Card */}
           <div className="rounded-xl border bg-card p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-4">RFP Details</h2>
-            
+
             <div className="grid gap-4 md:grid-cols-2">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -119,37 +133,47 @@ export default function RFPDetail() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Budget</p>
-                  <p className="font-semibold">${rfp.budget.toLocaleString()}</p>
+                  <p className="font-semibold">
+                    ${rfp.budget.toLocaleString()}
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
                   <Clock className="h-5 w-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Delivery Deadline</p>
-                  <p className="font-semibold">{format(new Date(rfp.deliveryDeadline), "MMMM d, yyyy")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Delivery Deadline
+                  </p>
+                  <p className="font-semibold">
+                    {format(new Date(rfp.deliveryDeadline), "MMMM d, yyyy")}
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
                   <CheckCircle2 className="h-5 w-5 text-success" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Payment Terms</p>
-                  <p className="font-semibold">{rfp.paymentTerms || "Not specified"}</p>
+                  <p className="font-semibold">
+                    {rfp.paymentTerms || "Not specified"}
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
                   <Package className="h-5 w-5 text-warning" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Warranty</p>
-                  <p className="font-semibold">{rfp.warrantyRequirement || "Not specified"}</p>
+                  <p className="font-semibold">
+                    {rfp.warrantyRequirement || "Not specified"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -167,7 +191,9 @@ export default function RFPDetail() {
                   <div>
                     <p className="font-medium">{item.name}</p>
                     {item.specifications && (
-                      <p className="text-sm text-muted-foreground">{item.specifications}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {item.specifications}
+                      </p>
                     )}
                   </div>
                   <Badge variant="secondary" className="text-sm">
@@ -187,7 +213,9 @@ export default function RFPDetail() {
               </div>
               <div className="space-y-3">
                 {rfpProposals.map((proposal) => {
-                  const vendor = mockVendors.find((v) => v._id === proposal.vendorId);
+                  const vendor = mockVendors.find(
+                    (v) => v._id === proposal.vendorId
+                  );
                   return (
                     <div
                       key={proposal._id}
@@ -200,22 +228,36 @@ export default function RFPDetail() {
                         <div>
                           <p className="font-medium">{vendor?.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            ${proposal.structuredData.totalPrice.toLocaleString()}
+                            $
+                            {proposal.structuredData.totalPrice.toLocaleString()}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <p className="text-sm text-muted-foreground">AI Score</p>
-                          <p className={cn(
-                            "font-semibold",
-                            proposal.aiScore >= 90 ? "text-success" :
-                            proposal.aiScore >= 70 ? "text-accent" : "text-warning"
-                          )}>
+                          <p className="text-sm text-muted-foreground">
+                            AI Score
+                          </p>
+                          <p
+                            className={cn(
+                              "font-semibold",
+                              proposal.aiScore >= 90
+                                ? "text-success"
+                                : proposal.aiScore >= 70
+                                ? "text-accent"
+                                : "text-warning"
+                            )}
+                          >
                             {proposal.aiScore}/100
                           </p>
                         </div>
-                        <Badge variant={proposal.status === "evaluated" ? "success" : "warning"}>
+                        <Badge
+                          variant={
+                            proposal.status === "evaluated"
+                              ? "success"
+                              : "warning"
+                          }
+                        >
                           {proposal.status}
                         </Badge>
                       </div>
@@ -255,7 +297,9 @@ export default function RFPDetail() {
                   />
                   <div className="flex-1">
                     <p className="font-medium text-sm">{vendor.name}</p>
-                    <p className="text-xs text-muted-foreground">{vendor.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {vendor.email}
+                    </p>
                   </div>
                 </label>
               ))}
@@ -269,7 +313,8 @@ export default function RFPDetail() {
                 disabled={selectedVendors.length === 0}
               >
                 <Send className="mr-2 h-4 w-4" />
-                Send to {selectedVendors.length} Vendor{selectedVendors.length !== 1 ? "s" : ""}
+                Send to {selectedVendors.length} Vendor
+                {selectedVendors.length !== 1 ? "s" : ""}
               </Button>
             )}
           </div>

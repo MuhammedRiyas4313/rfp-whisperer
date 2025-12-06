@@ -15,6 +15,12 @@ export interface IVendor {
   updatedAt: Date;
 }
 
+export type QueryObj = {
+  limit?: string;
+  page?: string;
+  search?: string;
+};
+
 /* MUTATIONS */
 const mutations = {
   createVendor: (data: Partial<IVendor>) => {
@@ -26,12 +32,6 @@ const mutations = {
   deleteVendor: (vendorId: string) => {
     return api.delete<GeneralApiResponse<IVendor>>(`/vendor/${vendorId}`);
   },
-};
-
-type QueryObj = {
-  limit?: string;
-  page?: string;
-  search?: string;
 };
 
 /* QUERIES */

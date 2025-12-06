@@ -24,10 +24,14 @@ export default function ProposalList() {
 
   const statusBadgeVariant = (status: string) => {
     switch (status) {
-      case "received": return "warning";
-      case "parsed": return "accent";
-      case "evaluated": return "success";
-      default: return "default";
+      case "received":
+        return "warning";
+      case "parsed":
+        return "accent";
+      case "evaluated":
+        return "success";
+      default:
+        return "default";
     }
   };
 
@@ -85,7 +89,11 @@ export default function ProposalList() {
                         For: {rfp?.title}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Received {format(new Date(proposal.createdAt), "MMM d, yyyy 'at' h:mm a")}
+                        Received{" "}
+                        {format(
+                          new Date(proposal.createdAt),
+                          "MMM d, yyyy 'at' h:mm a"
+                        )}
                       </p>
                     </div>
                   </div>
@@ -103,9 +111,13 @@ export default function ProposalList() {
                   <div className="mt-4 p-4 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/20">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="h-4 w-4 text-accent" />
-                      <span className="text-sm font-medium text-accent">AI Analysis</span>
+                      <span className="text-sm font-medium text-accent">
+                        AI Analysis
+                      </span>
                     </div>
-                    <p className="text-sm text-muted-foreground">{proposal.aiSummary}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {proposal.aiSummary}
+                    </p>
                   </div>
                 )}
 
@@ -113,44 +125,61 @@ export default function ProposalList() {
                 <div className="mt-4 flex flex-wrap items-center gap-6 text-sm">
                   <div>
                     <span className="text-muted-foreground">AI Score: </span>
-                    <span className={cn(
-                      "font-semibold",
-                      proposal.aiScore >= 90 ? "text-success" :
-                      proposal.aiScore >= 70 ? "text-accent" : "text-warning"
-                    )}>
+                    <span
+                      className={cn(
+                        "font-semibold",
+                        proposal.aiScore >= 90
+                          ? "text-success"
+                          : proposal.aiScore >= 70
+                          ? "text-accent"
+                          : "text-warning"
+                      )}
+                    >
                       {proposal.aiScore}/100
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Completeness: </span>
-                    <span className="font-semibold">{proposal.completeness}%</span>
+                    <span className="text-muted-foreground">
+                      Completeness:{" "}
+                    </span>
+                    <span className="font-semibold">
+                      {proposal.completeness}%
+                    </span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Delivery: </span>
-                    <span className="font-semibold">{proposal.structuredData.deliveryTime}</span>
+                    <span className="font-semibold">
+                      {proposal.structuredData.deliveryTime}
+                    </span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Warranty: </span>
-                    <span className="font-semibold">{proposal.structuredData.warranty}</span>
+                    <span className="font-semibold">
+                      {proposal.structuredData.warranty}
+                    </span>
                   </div>
                 </div>
 
                 {/* Items Preview */}
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {proposal.structuredData.items.slice(0, 3).map((item, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center rounded-md bg-secondary px-2 py-1 text-xs"
-                    >
-                      {item.quantity}x {item.name} @ ${item.unitPrice.toLocaleString()}
-                    </span>
-                  ))}
+                  {proposal.structuredData.items
+                    .slice(0, 3)
+                    .map((item, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center rounded-md bg-secondary px-2 py-1 text-xs"
+                      >
+                        {item.quantity}x {item.name} @ $
+                        {item.unitPrice.toLocaleString()}
+                      </span>
+                    ))}
                 </div>
 
                 <div className="mt-4 pt-4 border-t flex justify-end">
                   <Button asChild variant="ghost" size="sm">
                     <Link to={`/compare?rfp=${proposal.rfpId}`}>
-                      Compare with others <ArrowRight className="ml-1 h-4 w-4" />
+                      Compare with others{" "}
+                      <ArrowRight className="ml-1 h-4 w-4" />
                     </Link>
                   </Button>
                 </div>

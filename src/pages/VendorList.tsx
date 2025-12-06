@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import {
   Plus,
   Search,
@@ -31,12 +31,30 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Vendor } from "@/types";
 import { toast } from "@/hooks/use-toast";
-import { useVendors } from "@/services/vendor.service";
+import {
+  IVendor,
+  QueryObj,
+  useCreateVendor,
+  useDeleteVendor,
+  useUpdateVendor,
+  useVendors,
+} from "@/services/vendor.service";
+import { useDebounceCallback } from "@/hooks/useDebounceCallback";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 
 export default function VendorList() {
+  //STATES
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
+  const [editingVendor, setEditingVendor] = useState<IVendor | null>(null);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [vendorToDelete, setVendorToDelete] = useState<IVendor | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -44,10 +62,30 @@ export default function VendorList() {
     notes: "",
   });
 
-  //DATA
-  const { data } = useVendors(queryObj);
+  //QUERYOBJ
+  const queryObj = useMemo(() => {
+    const obj: QueryObj = { page: page?.toString(), limit: limit?.toString() };
 
-  const handleSubmit = () => {
+    if (searchQuery) {
+      obj.search = searchQuery;
+    }
+
+    return obj;
+  }, [page, limit, searchQuery]);
+
+  //DATA
+  const { data: vendorsData, isLoading, isFetching } = useVendors(queryObj);
+  const vendors = vendorsData?.data;
+
+  //LOADING...
+  const loading = isLoading || isFetching;
+
+  //MUTATION
+  const { mutateAsync: createVendor } = useCreateVendor();
+  const { mutateAsync: updateVendor } = useUpdateVendor();
+  const { mutateAsync: deleteVendor } = useDeleteVendor();
+
+  const handleSubmit = async () => {
     if (!formData.name || !formData.email) {
       toast({
         title: "Error",
@@ -57,38 +95,43 @@ export default function VendorList() {
       return;
     }
 
-    if (editingVendor) {
-      setVendors((prev) =>
-        prev.map((v) =>
-          v._id === editingVendor._id
-            ? { ...v, ...formData, updatedAt: new Date().toISOString() }
-            : v
-        )
-      );
+    try {
+      if (editingVendor) {
+        // UPDATE API CALL
+        await updateVendor({
+          _id: editingVendor._id,
+          ...formData,
+        });
+
+        toast({
+          title: "Vendor Updated",
+          description: `${formData.name} has been updated.`,
+        });
+      } else {
+        // CREATE API CALL
+        await createVendor(formData);
+
+        toast({
+          title: "Vendor Added",
+          description: `${formData.name} has been added.`,
+        });
+      }
+
+      // reset form after successful create/update
+      setIsDialogOpen(false);
+      setEditingVendor(null);
+      setFormData({ name: "", email: "", phone: "", notes: "" });
+    } catch (err) {
+      console.log(err, "ERROR IN CREATE VENDOR");
       toast({
-        title: "Vendor Updated",
-        description: `${formData.name} has been updated.`,
-      });
-    } else {
-      const newVendor: Vendor = {
-        _id: `v${Date.now()}`,
-        ...formData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setVendors((prev) => [...prev, newVendor]);
-      toast({
-        title: "Vendor Added",
-        description: `${formData.name} has been added.`,
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
       });
     }
-
-    setIsDialogOpen(false);
-    setEditingVendor(null);
-    setFormData({ name: "", email: "", phone: "", notes: "" });
   };
 
-  const handleEdit = (vendor: Vendor) => {
+  const handleEdit = (vendor: IVendor) => {
     setEditingVendor(vendor);
     setFormData({
       name: vendor.name,
@@ -99,12 +142,31 @@ export default function VendorList() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (vendor: Vendor) => {
-    setVendors((prev) => prev.filter((v) => v._id !== vendor._id));
-    toast({
-      title: "Vendor Deleted",
-      description: `${vendor.name} has been removed.`,
-    });
+  const confirmDelete = (vendor: IVendor) => {
+    setVendorToDelete(vendor);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!vendorToDelete) return;
+
+    try {
+      await deleteVendor(vendorToDelete._id);
+
+      toast({
+        title: "Vendor Deleted",
+        description: `${vendorToDelete.name} has been removed.`,
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Could not delete vendor. Try again.",
+        variant: "destructive",
+      });
+    }
+
+    setDeleteDialogOpen(false);
+    setVendorToDelete(null);
   };
 
   const openNewVendorDialog = () => {
@@ -112,6 +174,15 @@ export default function VendorList() {
     setFormData({ name: "", email: "", phone: "", notes: "" });
     setIsDialogOpen(true);
   };
+
+  //SEARCH HANDLER
+  const debouncedHandleSearch = useDebounceCallback((text: string) => {
+    try {
+      setSearchQuery(text);
+    } catch (error) {
+      console.log(error, "error in the debounce function");
+    }
+  }, 1000);
 
   return (
     <div className="animate-fade-in">
@@ -207,24 +278,47 @@ export default function VendorList() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search vendors..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            // value={searchQuery}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              debouncedHandleSearch(e.target.value)
+            }
             className="pl-10"
           />
         </div>
       </div>
 
       {/* Vendor Grid */}
-      {filteredVendors.length === 0 ? (
+      {/* Vendor Grid */}
+      {loading ? (
+        // Loading State
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-xl border bg-card p-5 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div className="w-full">
+                  <Skeleton className="h-5 w-3/4 mb-3" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-5/6" />
+                    <Skeleton className="h-4 w-4/6" />
+                  </div>
+                </div>
+                <Skeleton className="h-8 w-8 rounded-md" />
+              </div>
+              <Skeleton className="h-4 w-full mt-4" />
+            </div>
+          ))}
+        </div>
+      ) : !vendorsData ||
+        (vendorsData?.total === 0 && vendorsData?.data?.length === 0) ? (
         <EmptyState
           icon={Search}
           title="No vendors found"
           description="Add vendors to your network to start sending RFPs."
-          action={{ label: "Add Vendor", to: "#" }}
+          action={{ label: "Add Vendor", to: "#", func: openNewVendorDialog }}
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredVendors.map((vendor) => (
+          {vendors?.map((vendor: IVendor) => (
             <div
               key={vendor._id}
               className="group rounded-xl border bg-card p-5 shadow-sm transition-all duration-200 hover:shadow-md"
@@ -266,7 +360,7 @@ export default function VendorList() {
                       Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => handleDelete(vendor)}
+                      onClick={() => confirmDelete(vendor)}
                       className="text-destructive focus:text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
@@ -284,6 +378,15 @@ export default function VendorList() {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="Delete Vendor?"
+        description={`Are you sure you want to delete ${vendorToDelete?.name}?`}
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteDialogOpen(false)}
+      />
     </div>
   );
 }
